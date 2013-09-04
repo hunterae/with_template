@@ -8,11 +8,13 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 require 'test/unit'
-require 'shoulda'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
-require 'use_template'
+require 'shoulda'
+require 'mocha'
+require 'active_support/core_ext'
+require 'blocks'
+require 'with_template'
 
-class Test::Unit::TestCase
-end
+ActiveSupport::Deprecation.silenced = true
