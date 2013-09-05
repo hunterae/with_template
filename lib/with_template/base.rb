@@ -43,7 +43,6 @@ module WithTemplate
     #   An optional block with code that affects how the template renders
     def render_template(partial, &block)
       render_options = global_options.clone
-      # TODO: ALLOW RENAME OF VARIABLE
       render_options[self.variable] = self
       render_options[:captured_block] = view.capture(self, &block) if block_given?
 
@@ -93,6 +92,7 @@ module WithTemplate
     end
 
     protected
+
     def initialize(view, options={})
       self.queued_blocks = []
       self.block_groups = {}

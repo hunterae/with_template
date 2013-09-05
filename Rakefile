@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "with_template"
   gem.homepage = "http://github.com/hunterae/with_template"
   gem.license = "MIT"
-  gem.summary = %Q{Use templates}
-  gem.description = %Q{Use template}
+  gem.summary = %Q{Render a template (partial) and easily override any of the components of the template}
+  gem.description = %Q{Render a template (partial) and easily override any of the components of the template}
   gem.email = "hunterae@gmail.com"
   gem.authors = ["Andrew Hunter"]
   # dependencies defined in Gemfile
@@ -29,7 +29,7 @@ require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/*_test.rb'
-  test.verbose = false
+  test.verbose = true
 end
 task :default => :test
 
