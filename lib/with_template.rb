@@ -1,3 +1,4 @@
+require "blocks"
 require "action_view"
 
 module WithTemplate
