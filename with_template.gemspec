@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "lib/with_template.rb",
     "lib/with_template/base.rb",
     "lib/with_template/view_additions.rb",
+    "rails/init.rb",
     "test/base_test.rb",
     "test/helper.rb",
     "with_template.gemspec"
