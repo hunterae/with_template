@@ -6,7 +6,7 @@ class WithTemplate::BaseTest < Test::Unit::TestCase
     @builder = WithTemplate::Base.new(@view)
   end
 
-  context "render_template" do
+  context "#render_template" do
     should "attempt to render a partial specified as the :template parameter" do
       @view.expects(:render).with{ |template, options| template == "my_template"}
       @builder.render_template("my_template")
@@ -35,7 +35,7 @@ class WithTemplate::BaseTest < Test::Unit::TestCase
     end
   end
 
-  context "queue" do
+  context "#queue" do
     should "store all queued blocks in the queued_blocks array" do
       assert @builder.queued_blocks.empty?
       @builder.queue :test_block
@@ -90,7 +90,7 @@ class WithTemplate::BaseTest < Test::Unit::TestCase
     end
   end
 
-  context "method_missing" do
+  context "#method_missing" do
     should "start a new block group if a method is missing" do
       @builder.some_method
       queued_blocks = @builder.block_groups[:some_method]
