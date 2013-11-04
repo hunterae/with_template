@@ -43,7 +43,7 @@ module WithTemplate
     #   An optional block with code that affects how the template renders
     def render_template(partial, &block)
       render_options = global_options.clone
-      render_options[self.variable] = self
+      render_options[render_options[:variable]] = self
       render_options[:captured_block] = view.capture(self, &block) if block_given?
 
       view.render partial, render_options

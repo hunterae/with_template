@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'blocks', '~> 2.5.0'
+gem 'blocks', '~> 2.6.0'
 gem 'rails', '>= 3.0.0'
 
 group :development do
