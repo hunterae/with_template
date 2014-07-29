@@ -1,14 +1,160 @@
 = with_template
 
-Render a template (partial) and easily override any of the components of the template.
+WithTemplate takes the concept of {Blocks}[https://github.com/hunterae/blocks] and adds templating to it. You specify a particular partial to render, and then maintain the ability to control how it renders from outside the template.
+
+This allows you to very easily build reusable UI components. This is best demonstrated through examples.
 
 == Installation
 
 To install, add the following to the Gemfile:
   gem install 'with_template'
 
-== Copyright
+== Example 1: TableFor
+The {TableFor}[https://github.com/hunterae/table-for] was built by extending WithTemplate. Using a partial that defines a
+series of blocks ({See here}[https://github.com/hunterae/table-for/blob/master/app/views/table_for/_table_for.html.erb]),
+the user of the table builder is passed in a collection of records and specifies exactly which columns to render in the table.
 
-Copyright (c) 2013 Andrew Hunter. See LICENSE.txt for
-further details.
+The columns can correspond to fields are the records, methods to be invoked, or the user can specify exactly what should
+be rendered in the column. Additionally, the headers can be overridden, any any component of the table can be replaced
+should the user not like how the table renders. A simple example would be:
 
+  <%= table_for @users, :table_html => {:class => "table table-hover table-bordered"} do |table| %>
+    <% table.column :id, :header => false %>
+    <% table.column :full_name do |user| %>
+      <%= "#{user.first_name} #{user.last_name}" %>
+    <% end %>
+    <% table.footer do %>
+      <div class="pull-right">
+        <%= will_paginate @users %>
+      </div>
+    <% end %>
+  <% end %>
+
+== Example 2: Shared Layouts
+Say you wanted to wanted to create the following three layouts for your application:
+1) a single full-width column
+2) two columns, one that is a fourth of the page, and one that is three fourths of the page.
+3) three columns, each a third of the page
+
+To accomplish this, you may find yourself copying and pasting code between layouts, such as the head tag,
+any meta tags, javascript includes, stylesheet links, navigation bar, the footer, and any components shared across all pages. 
+
+Perhaps you typically take this approach, or maybe you render a partial that you pass local variables 
+to that are used within the partial to conditionally render output. 
+
+I’d like to propose a third solution: use with_template.
+
+With with_template, you specify what template (really just a partial) to render and a block that 
+can be used to override definitions within the partial, control what gets rendered and in 
+what order, or the block itself can be rendered in the partial.
+
+With the above example, we could define a single partial, something like app/layouts/_shared_layout.html.erb
+(Note: If you aren't familiar with the {Blocks gem}[https://github.com/hunterae/blocks], I highly recommend checking out
+the documentation first):
+
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+    <!-- meta tags -->
+      <title>
+        <%= blocks.render :title do %> 
+          My App
+        <% end %>
+      </title>
+      <%= csrf_meta_tags %>
+      <%= blocks.render :stylesheets do %>
+        <%= stylesheet_link_tag "application", :media => "all" %>
+      <% end %>
+      <!-- Additional <head> content -->
+    </head>
+    <body>
+      <%= blocks.render_with_partials :navbar %>
+      <div class="main">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12">
+              <%= bootstrap_flash %>
+            </div>
+            <%= captured_block %>
+          </div>
+        </div>
+      </div>
+      <%= blocks.render :footer do %>
+        <%= render "blocks/footer" %>
+      <% end %>
+      <%= blocks.render :javascripts do %>
+        <%= include_gon %>
+        <%= javascript_include_tag "application" %>
+      <% end %>
+    </body>
+  </html>
+
+Here we've defined a template of code that can be shared amongst all layouts. Where the individual layouts differ, there
+are several hooks that have been added to the template that provide convenient ways of adding code blocks or replacing
+the way others render. In the above code, we call "blocks.render" and "blocks.render_with_partials" in a couple of different
+places. These allow us, from outside the template, to specify code to render before any of those blocks, after any of those
+blocks, or replace any of those blocks. We'll get to that shortly.
+
+Using the above partial, we can now very easily define the 3 layouts defined above:
+
+  <!-- app/views/layout/one_column.html.erb -->
+  <%= with_template("layouts/shared_layout") do %>
+    <div class="col-md-12">
+      <%= yield %>
+    </div>
+  <% end %>
+
+  <!-- app/views/layout/two_columns.html.erb -->
+  <%= with_template("layouts/shared_layout") do %>
+    <%= blocks.render_with_partials :sidebar, :wrap_with => { :tag => :div, :class => "col-md-3 sidebar" } %>
+    <div class="col-md-9">
+      <%= yield %>
+    </div>
+  <% end %>
+
+  <!-- app/views/layout/three_columns.html.erb -->
+  <%= with_template("layouts/shared_layout") do %>
+    <%= blocks.render :column1, :wrap_with => { :tag => :div, :class => "col-md-4" } %>
+    <%= blocks.render :column2, :wrap_with => { :tag => :div, :class => "col-md-4" } %>
+    <%= blocks.render :column3, :wrap_with => { :tag => :div, :class => "col-md-4" } %>
+  <% end %>
+
+Suppose we wanted to add a fourth layout for admins that used roughly the same code as the one column layout,
+but with some additional javascript and stylesheet files included. In the true spirit of DRY, this is
+exceptionally easy to do with WithTemplate:
+
+  <!-- app/views/layout/admin.html.erb -->
+  <% blocks.after :stylesheets do %>
+    <%= stylesheet_link_tag "admin", :media => "all" %>
+  <% end %>
+  
+  <% blocks.after :javascripts do %>
+    <%= javascript_include_tag "admin" %>
+  <% end %>
+  
+  <% blocks.define :title do %>
+    Admin
+  <% end %>
+  
+  <%= render :template => "layouts/one_column" %>
+
+With those lines, we added in the admin javascript files, the admin stylesheets, set the title to "Admin",
+and reused the basic one column layout. What if, instead of rendering the admin stylesheets and javascripts
+after the application stylesheets and javascripts, we wanted to flat out replace the application stylesheets
+and javascripts. Simple enough:
+
+  <!-- app/views/layout/admin.html.erb -->
+  <% blocks.define :stylesheets do %>
+    <%= stylesheet_link_tag "admin", :media => "all" %>
+  <% end %>
+  
+  <% blocks.define :javascripts do %>
+    <%= javascript_include_tag "admin" %>
+  <% end %>
+  
+  <% blocks.define :title do %>
+    Admin
+  <% end %>
+  
+  <%= render :template => "layouts/one_column" %>
+  
