@@ -6,4 +6,4 @@ module WithTemplate
   autoload :ViewAdditions, "with_template/view_additions"
 end
 
-ActionView::Base.send :include, WithTemplate::ViewAdditions::ClassMethods
+ActionView::Base.send :include, WithTemplate::ViewAdditions

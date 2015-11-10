@@ -3,8 +3,8 @@ module WithTemplate
     # Array of Blocks::Container objects, storing the order of blocks as they were queued
     attr_accessor :queued_blocks
 
-    # A Hash of queued_blocks arrays; a new array is started when method_missing is invoked
-    attr_accessor :block_groups
+    # Options that were passed into this instance of WithTemplate for use when merging options with a parent instance
+    attr_accessor :init_options
 
     # Render a partial, treating it as a template, and any code in the block argument will impact how the template renders
     #   <%= WithTemplate::Base.new(self).render_template("shared/wizard") do |blocks| %>
@@ -41,10 +41,12 @@ module WithTemplate
     #   The partial to render as a template
     # [+block+]
     #   An optional block with code that affects how the template renders
-    def render_template(partial, &block)
+    def render_template(partial, variable=nil, &block)
       render_options = global_options.clone
-      render_options[render_options[:variable]] = self
       render_options[:captured_block] = view.capture(self, &block) if block_given?
+      render_options[:options] = render_options
+      variable ||= render_options.delete(:variable) || :template
+      render_options[variable] = self
 
       view.render partial, render_options
     end
@@ -95,30 +97,8 @@ module WithTemplate
 
     def initialize(view, options={})
       self.queued_blocks = []
-      self.block_groups = {}
-      super(view, options.reverse_merge(:variable => :template))
-    end
-
-    # If a method is missing, we'll assume the user is starting a new block group by that missing method name
-    def method_missing(m, *args, &block)
-      options = args.extract_options!
-
-      # If the specified block group has already been defined, it is simply returned here for iteration.
-      #  It will consist of all the blocks used in this block group that have yet to be rendered,
-      #   as the call for their use occurred before the template was rendered (where their definitions likely occurred)
-      return self.block_groups[m] unless self.block_groups[m].nil?
-
-      # Allows for nested block groups, store the current block positions array and start a new one
-      original_queued_blocks = self.queued_blocks
-      self.queued_blocks = []
-      self.block_groups[m] = self.queued_blocks
-
-      # Capture the contents of the block group (this will only capture block definitions and block renders; it will ignore anything else)
-      view.capture(global_options.merge(options), &block) if block_given?
-
-      # restore the original block positions array
-      self.queued_blocks = original_queued_blocks
-      nil
+      self.init_options = options
+      super(view, options)
     end
   end
 end

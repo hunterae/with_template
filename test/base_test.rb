@@ -1,6 +1,6 @@
 require 'helper'
 
-class WithTemplate::BaseTest < Test::Unit::TestCase
+class WithTemplate::BaseTest <  MiniTest::Unit::TestCase
   def setup
     @view = ActionView::Base.new
     @builder = WithTemplate::Base.new(@view)
@@ -28,10 +28,16 @@ class WithTemplate::BaseTest < Test::Unit::TestCase
       @builder.render_template("some_template")
     end
 
-    should "add allow the variable in the partial to be overridden" do
-      builder = WithTemplate::Base.new(@view, :variable => :new_template_variable)
+    should "allow the variable in the partial to be overridden in the options hash" do
+      builder = WithTemplate::Base.new(@view, variable: :new_template_variable)
       @view.expects(:render).with { |template, options| options[:new_template_variable] == builder }
       builder.render_template("some_template")
+    end
+
+    should "allow the variable in the partial to be overridden as a parameter" do
+      builder = WithTemplate::Base.new(@view)
+      @view.expects(:render).with { |template, options| options[:new_template_variable] == builder }
+      builder.render_template("some_template", :new_template_variable)
     end
   end
 
@@ -87,32 +93,6 @@ class WithTemplate::BaseTest < Test::Unit::TestCase
       @builder.queue :test_block, &block
       container = @builder.queued_blocks.first
       assert_equal block, container.block
-    end
-  end
-
-  context "#method_missing" do
-    should "start a new block group if a method is missing" do
-      @builder.some_method
-      queued_blocks = @builder.block_groups[:some_method]
-      assert_equal [], queued_blocks
-    end
-
-    should "add items to a queue when a new block group is started" do
-      @builder.some_method do
-        @builder.queue :myblock1
-        @builder.queue :myblock2
-      end
-      @builder.some_method2 do
-        @builder.queue :myblock3
-      end
-      queued_blocks = @builder.block_groups[:some_method]
-      assert_equal 2, queued_blocks.length
-      assert_equal :myblock1, queued_blocks.first.name
-      assert_equal :myblock2, queued_blocks.second.name
-      queued_blocks = @builder.block_groups[:some_method2]
-      assert_equal 1, queued_blocks.length
-      assert_equal :myblock3, queued_blocks.first.name
-      assert_equal [], @builder.queued_blocks
     end
   end
 end

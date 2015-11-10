@@ -9,6 +9,10 @@ This allows you to very easily build reusable UI components. This is best demons
 To install, add the following to the Gemfile:
   gem install 'with_template'
 
+== Note (12/14/15)
+I am in the process of doing a full rewrite of this readme file to include better examples, and better description
+of the features including new features that have not been documented yet.
+
 == Example 1: TableFor
 The {TableFor}[https://github.com/hunterae/table-for] was built by extending WithTemplate. Using a partial that defines a
 series of blocks ({See here}[https://github.com/hunterae/table-for/blob/master/app/views/table_for/_table_for.html.erb]),
@@ -37,15 +41,15 @@ Say you wanted to wanted to create the following three layouts for your applicat
 3) three columns, each a third of the page
 
 To accomplish this, you may find yourself copying and pasting code between layouts, such as the head tag,
-any meta tags, javascript includes, stylesheet links, navigation bar, the footer, and any components shared across all pages. 
+any meta tags, javascript includes, stylesheet links, navigation bar, the footer, and any components shared across all pages.
 
-Perhaps you typically take this approach, or maybe you render a partial that you pass local variables 
-to that are used within the partial to conditionally render output. 
+Perhaps you typically take this approach, or maybe you render a partial that you pass local variables
+to that are used within the partial to conditionally render output.
 
 I’d like to propose a third solution: use with_template.
 
-With with_template, you specify what template (really just a partial) to render and a block that 
-can be used to override definitions within the partial, control what gets rendered and in 
+With with_template, you specify what template (really just a partial) to render and a block that
+can be used to override definitions within the partial, control what gets rendered and in
 what order, or the block itself can be rendered in the partial.
 
 With the above example, we could define a single partial, something like app/layouts/_shared_layout.html.erb
@@ -57,7 +61,7 @@ the documentation first):
     <head>
     <!-- meta tags -->
       <title>
-        <%= blocks.render :title do %> 
+        <%= blocks.render :title do %>
           My App
         <% end %>
       </title>
@@ -127,15 +131,15 @@ exceptionally easy to do with WithTemplate:
   <% blocks.after :stylesheets do %>
     <%= stylesheet_link_tag "admin", :media => "all" %>
   <% end %>
-  
+
   <% blocks.after :javascripts do %>
     <%= javascript_include_tag "admin" %>
   <% end %>
-  
+
   <% blocks.define :title do %>
     Admin
   <% end %>
-  
+
   <%= render :template => "layouts/one_column" %>
 
 With those lines, we added in the admin javascript files, the admin stylesheets, set the title to "Admin",
@@ -147,14 +151,13 @@ and javascripts. Simple enough:
   <% blocks.define :stylesheets do %>
     <%= stylesheet_link_tag "admin", :media => "all" %>
   <% end %>
-  
+
   <% blocks.define :javascripts do %>
     <%= javascript_include_tag "admin" %>
   <% end %>
-  
+
   <% blocks.define :title do %>
     Admin
   <% end %>
-  
+
   <%= render :template => "layouts/one_column" %>
-  
