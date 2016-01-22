@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "rails", ">= 3.0.0"
-  spec.add_dependency "blocks", "~> 2.7.0"
+  spec.add_dependency "blocks", "~> 2.8.0"
 
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "shoulda", "~> 3.5.0"
